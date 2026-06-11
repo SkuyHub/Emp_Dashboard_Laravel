@@ -15,7 +15,6 @@
             </div>
         </nav>
 
-        <!-- Main content -->
         <div class="p-6">
 
             <!-- Header row -->
@@ -29,6 +28,17 @@
                 </button>
             </div>
 
+            <!-- Search bar -->
+            <div class="mb-4">
+                <input
+                    v-model="searchInput"
+                    @input="handleSearch"
+                    type="text"
+                    placeholder="Search by name, email, position, or department..."
+                    class="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+            </div>
+
             <!-- Loading -->
             <div v-if="store.loading" class="text-center py-12 text-gray-400">
                 Loading...
@@ -39,11 +49,22 @@
                 <table class="w-full text-sm text-left">
                     <thead class="bg-gray-50 text-gray-500 uppercase text-xs">
                         <tr>
-                            <th class="px-6 py-3">Name</th>
-                            <th class="px-6 py-3">Email</th>
-                            <th class="px-6 py-3">Position</th>
-                            <th class="px-6 py-3">Department</th>
-                            <th class="px-6 py-3">Status</th>
+                            <th
+                                v-for="col in columns"
+                                :key="col.field"
+                                class="px-6 py-3 cursor-pointer select-none hover:text-gray-700 transition"
+                                @click="col.sortable && store.setSort(col.field)"
+                            >
+                                <span class="flex items-center gap-1">
+                                    {{ col.label }}
+                                    <template v-if="col.sortable">
+                                        <span v-if="store.sortBy === col.field">
+                                            {{ store.sortDir === 'asc' ? '↑' : '↓' }}
+                                        </span>
+                                        <span v-else class="text-gray-300">↕</span>
+                                    </template>
+                                </span>
+                            </th>
                             <th class="px-6 py-3">Actions</th>
                         </tr>
                     </thead>
@@ -53,12 +74,11 @@
                             :key="employee.id"
                             class="hover:bg-gray-50 transition"
                         >
-                            <td class="px-6 py-4 font-medium text-gray-800">
-                                {{ employee.name }}
-                            </td>
+                            <td class="px-6 py-4 font-medium text-gray-800">{{ employee.name }}</td>
                             <td class="px-6 py-4 text-gray-500">{{ employee.email }}</td>
                             <td class="px-6 py-4 text-gray-500">{{ employee.position }}</td>
                             <td class="px-6 py-4 text-gray-500">{{ employee.department }}</td>
+                            <td class="px-6 py-4 text-gray-500">{{ employee.salary }}</td>
                             <td class="px-6 py-4">
                                 <span
                                     :class="employee.status === 'active'
@@ -129,73 +149,43 @@
                     <div class="grid grid-cols-2 gap-3">
                         <div>
                             <label class="block text-xs font-medium text-gray-600 mb-1">Name</label>
-                            <input
-                                v-model="form.name"
-                                type="text"
-                                required
-                                class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            />
+                            <input v-model="form.name" type="text" required
+                                class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
                         </div>
                         <div>
                             <label class="block text-xs font-medium text-gray-600 mb-1">Email</label>
-                            <input
-                                v-model="form.email"
-                                type="email"
-                                required
-                                class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            />
+                            <input v-model="form.email" type="email" required
+                                class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
                         </div>
                         <div>
                             <label class="block text-xs font-medium text-gray-600 mb-1">Phone</label>
-                            <input
-                                v-model="form.phone"
-                                type="text"
-                                class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            />
+                            <input v-model="form.phone" type="text"
+                                class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
                         </div>
                         <div>
                             <label class="block text-xs font-medium text-gray-600 mb-1">Position</label>
-                            <input
-                                v-model="form.position"
-                                type="text"
-                                required
-                                class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            />
+                            <input v-model="form.position" type="text" required
+                                class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
                         </div>
                         <div>
                             <label class="block text-xs font-medium text-gray-600 mb-1">Department</label>
-                            <input
-                                v-model="form.department"
-                                type="text"
-                                required
-                                class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            />
+                            <input v-model="form.department" type="text" required
+                                class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
                         </div>
                         <div>
                             <label class="block text-xs font-medium text-gray-600 mb-1">Salary</label>
-                            <input
-                                v-model="form.salary"
-                                type="number"
-                                required
-                                class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            />
+                            <input v-model="form.salary" type="number" required
+                                class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
                         </div>
                         <div>
                             <label class="block text-xs font-medium text-gray-600 mb-1">Hire Date</label>
-                            <input
-                                v-model="form.hired_at"
-                                type="date"
-                                required
-                                class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            />
+                            <input v-model="form.hired_at" type="date" required
+                                class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
                         </div>
                         <div>
                             <label class="block text-xs font-medium text-gray-600 mb-1">Status</label>
-                            <select
-                                v-model="form.status"
-                                required
-                                class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            >
+                            <select v-model="form.status" required
+                                class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
                                 <option value="active">Active</option>
                                 <option value="inactive">Inactive</option>
                             </select>
@@ -205,18 +195,12 @@
                     <p v-if="formError" class="text-red-500 text-xs">{{ formError }}</p>
 
                     <div class="flex justify-end gap-2 pt-2">
-                        <button
-                            type="button"
-                            @click="closeModal"
-                            class="px-4 py-2 text-sm text-gray-600 hover:text-gray-800 transition"
-                        >
+                        <button type="button" @click="closeModal"
+                            class="px-4 py-2 text-sm text-gray-600 hover:text-gray-800 transition">
                             Cancel
                         </button>
-                        <button
-                            type="submit"
-                            :disabled="submitting"
-                            class="px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:opacity-50"
-                        >
+                        <button type="submit" :disabled="submitting"
+                            class="px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:opacity-50">
                             {{ submitting ? 'Saving...' : isEditing ? 'Update' : 'Create' }}
                         </button>
                     </div>
@@ -238,17 +222,12 @@
                     This cannot be undone.
                 </p>
                 <div class="flex justify-center gap-3">
-                    <button
-                        @click="showDeleteModal = false"
-                        class="px-4 py-2 text-sm text-gray-600 hover:text-gray-800 transition"
-                    >
+                    <button @click="showDeleteModal = false"
+                        class="px-4 py-2 text-sm text-gray-600 hover:text-gray-800 transition">
                         Cancel
                     </button>
-                    <button
-                        @click="handleDelete"
-                        :disabled="submitting"
-                        class="px-4 py-2 text-sm bg-red-600 text-white rounded-lg hover:bg-red-700 transition disabled:opacity-50"
-                    >
+                    <button @click="handleDelete" :disabled="submitting"
+                        class="px-4 py-2 text-sm bg-red-600 text-white rounded-lg hover:bg-red-700 transition disabled:opacity-50">
                         {{ submitting ? 'Deleting...' : 'Delete' }}
                     </button>
                 </div>
@@ -268,6 +247,26 @@ const router = useRouter()
 const auth = useAuthStore()
 const store = useEmployeeStore()
 
+// Column definitions — drives both the table headers and sort behaviour
+const columns = [
+    { field: 'name',       label: 'Name',       sortable: true  },
+    { field: 'email',      label: 'Email',       sortable: true  },
+    { field: 'position',   label: 'Position',    sortable: true  },
+    { field: 'department', label: 'Department',  sortable: true  },
+    { field: 'salary',     label: 'Salary',      sortable: true  },
+    { field: 'status',     label: 'Status',      sortable: false },
+]
+
+// Search
+const searchInput = ref('')
+let searchTimeout = null
+function handleSearch() {
+    clearTimeout(searchTimeout)
+    searchTimeout = setTimeout(() => {
+        store.setSearch(searchInput.value)
+    }, 400)
+}
+
 // Modal state
 const showModal = ref(false)
 const showDeleteModal = ref(false)
@@ -276,16 +275,9 @@ const selectedEmployee = ref(null)
 const submitting = ref(false)
 const formError = ref(null)
 
-// Form state
 const emptyForm = {
-    name: '',
-    email: '',
-    phone: '',
-    position: '',
-    department: '',
-    salary: '',
-    hired_at: '',
-    status: 'active',
+    name: '', email: '', phone: '', position: '',
+    department: '', salary: '', hired_at: '', status: 'active',
 }
 const form = ref({ ...emptyForm })
 
@@ -305,14 +297,14 @@ function openEditModal(employee) {
     isEditing.value = true
     selectedEmployee.value = employee
     form.value = {
-        name: employee.name,
-        email: employee.email,
-        phone: employee.phone ?? '',
-        position: employee.position,
+        name:       employee.name,
+        email:      employee.email,
+        phone:      employee.phone ?? '',
+        position:   employee.position,
         department: employee.department,
-        salary: employee.salary,
-        hired_at: employee.hired_at,
-        status: employee.status,
+        salary:     employee.salary,
+        hired_at:   employee.hired_at,
+        status:     employee.status,
     }
     formError.value = null
     showModal.value = true
